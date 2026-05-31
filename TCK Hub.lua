@@ -1,4 +1,4 @@
-﻿if (game:GetService("CoreGui")):FindFirstChild("TckHub") and (game:GetService("CoreGui")):FindFirstChild("ScreenGui") then
+if (game:GetService("CoreGui")):FindFirstChild("TckHub") and (game:GetService("CoreGui")):FindFirstChild("ScreenGui") then
 	(game:GetService("CoreGui")).TckHub:Destroy();
 	(game:GetService("CoreGui")).ScreenGui:Destroy();
 end;
@@ -75,7 +75,9 @@ ImageButton.AutoButtonColor = false;
 MakeDraggable(ImageButton, OutlineButton);
 CreateRounded(ImageButton, 10);
 ImageButton.MouseButton1Click:connect(function()
-	(game.CoreGui:FindFirstChild("TckHub")).Enabled = not (game.CoreGui:FindFirstChild("TckHub")).Enabled;
+	if game.CoreGui:FindFirstChild("TckHub") then
+		(game.CoreGui:FindFirstChild("TckHub")).Enabled = not (game.CoreGui:FindFirstChild("TckHub")).Enabled;
+	end
 end);
 local NotificationFrame = Instance.new("ScreenGui");
 NotificationFrame.Name = "NotificationFrame";
@@ -411,7 +413,9 @@ function Update:Window(Config)
 	CloseButton.ImageColor3 = Color3.fromRGB(245, 245, 245);
 	CreateRounded(CloseButton, 3);
 	CloseButton.MouseButton1Click:connect(function()
-		(game.CoreGui:FindFirstChild("TckHub")).Enabled = not (game.CoreGui:FindFirstChild("TckHub")).Enabled;
+		if game.CoreGui:FindFirstChild("TckHub") then
+			(game.CoreGui:FindFirstChild("TckHub")).Enabled = not (game.CoreGui:FindFirstChild("TckHub")).Enabled;
+		end
 	end);
 	local ResizeButton = Instance.new("ImageButton");
 	ResizeButton.Name = "ResizeButton";
@@ -672,7 +676,9 @@ function Update:Window(Config)
 	MakeDraggable(Top, OutlineMain);
 	UserInputService.InputBegan:Connect(function(input)
 		if input.KeyCode == Enum.KeyCode.Insert then
-			(game.CoreGui:FindFirstChild("TckHub")).Enabled = not (game.CoreGui:FindFirstChild("TckHub")).Enabled;
+			if game.CoreGui:FindFirstChild("TckHub") then
+				(game.CoreGui:FindFirstChild("TckHub")).Enabled = not (game.CoreGui:FindFirstChild("TckHub")).Enabled;
+			end
 		end;
 	end);
 	local Dragging = false;
