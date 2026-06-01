@@ -327,36 +327,14 @@ function Update:StartLoad()
     BarGradient.Color = ColorSequence.new(_G.Primary, _G.Third)
     BarGradient.Parent = LoadingBar
 
-    local barTween1 = TweenService:Create(LoadingBar, TweenInfo.new(1.2, Enum.EasingStyle.OutCubic), {
-        Size = UDim2.new(0.45, 0, 1, 0)
+    -- Progress bar starts animating to 75% slowly
+    local progressTween = TweenService:Create(LoadingBar, TweenInfo.new(3.0, Enum.EasingStyle.OutQuad), {
+        Size = UDim2.new(0.75, 0, 1, 0)
     })
-    local barTween2 = TweenService:Create(LoadingBar, TweenInfo.new(1.5, Enum.EasingStyle.OutCubic), {
-        Size = UDim2.new(1, 0, 1, 0)
-    })
-
-    barTween1:Play()
+    progressTween:Play()
 
     local dotCount = 0
     local running = true
-
-    function Update:Loaded()
-        pcall(function()
-            barTween1:Cancel()
-            barTween2:Play()
-        end)
-    end
-
-    barTween2.Completed:Connect(function()
-        task.wait(0.5)
-        running = false
-        DescriptionLoader.Text = "Fully Loaded!"
-        task.wait(0.3)
-        TweenService:Create(LoaderFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(MainLoaderFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
-        task.delay(0.4, function()
-            Loader:Destroy()
-        end)
-    end)
 
     task.spawn(function()
         while running do
@@ -366,6 +344,32 @@ function Update:StartLoad()
             task.wait(0.4)
         end
     end)
+
+    -- Loaded function that handles immediate or delayed call safely
+    function Update:Loaded()
+        running = false
+        pcall(function()
+            progressTween:Cancel() -- stop the slow animation
+        end)
+        
+        -- Quickly animate to 100%
+        local finishTween = TweenService:Create(LoadingBar, TweenInfo.new(0.3, Enum.EasingStyle.OutQuad), {
+            Size = UDim2.new(1, 0, 1, 0)
+        })
+        finishTween:Play()
+        
+        finishTween.Completed:Connect(function()
+            DescriptionLoader.Text = "Fully Loaded!"
+            task.wait(0.3)
+            local fade1 = TweenService:Create(LoaderFrame, TweenInfo.new(0.3), {BackgroundTransparency = 1})
+            local fade2 = TweenService:Create(MainLoaderFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
+            fade1:Play()
+            fade2:Play()
+            task.delay(0.3, function()
+                Loader:Destroy()
+            end)
+        end)
+    end
 end
 
 -- Configuration Configuration File System
