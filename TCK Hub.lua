@@ -50,45 +50,40 @@ local function createStroke(parent, color, thickness, transparency)
 end
 
 local function makeDraggable(topbar, object)
-    local dragging, dragInput, dragStart, startPos
-    
-    local function update(input)
-        local delta = input.Position - dragStart
-        local targetPos = UDim2.new(
-            startPos.X.Scale, startPos.X.Offset + delta.X,
-            startPos.Y.Scale, startPos.Y.Offset + delta.Y
-        )
-        TweenService:Create(object, TweenInfo.new(0.12, Enum.EasingStyle.OutQuad), {
-            Position = targetPos
-        }):Play()
-    end
-    
+    local dragging = false
+    local dragInput, dragStart, startPos
+
     topbar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = object.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
         end
     end)
-    
+
     topbar.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
     end)
-    
+
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
-            update(input)
+            local delta = input.Position - dragStart
+            object.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
         end
     end)
 end
+
 
 -- ScreenGui Setup
 local ScreenGui = Instance.new("ScreenGui")
@@ -699,9 +694,11 @@ function Update:Window(Config)
     MainPage.Size = UDim2.new(1, 0, 1, 0)
     createCorner(MainPage, 8)
 
-    local PageList = Instance.new("Folder")
+    local PageList = Instance.new("Frame")
     PageList.Name = "PageList"
     PageList.Parent = MainPage
+    PageList.BackgroundTransparency = 1
+    PageList.Size = UDim2.new(1, 0, 1, 0)
 
     local UIPageLayout = Instance.new("UIPageLayout")
     UIPageLayout.Parent = PageList
