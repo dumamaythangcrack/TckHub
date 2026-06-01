@@ -553,6 +553,7 @@ function Update:Window(Config)
 	SettingsFrame.BackgroundColor3 = _G.Dark
 	SettingsFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 	SettingsFrame.Size = UDim2.new(0.75, 0, 0.75, 0)
+	SettingsFrame.ClipsDescendants = true
 	CreateRounded(SettingsFrame, 14)
 	CreateStroke(SettingsFrame, _G.Third, 1.2, 0.2)
 
@@ -993,7 +994,6 @@ function Update:Window(Config)
 			ImageLabel.ImageColor3 = TextWhite
 
 			-- Hover effects
-			TextButton.MouseEnter:Connect(font)
 			Button.MouseEnter:Connect(function()
 				TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(28, 28, 33)}):Play()
 				TweenService:Create(rowStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(50, 50, 55)}):Play()
@@ -1125,7 +1125,7 @@ function Update:Window(Config)
 		-- ==================== PHẦN TỬ: DROPDOWN ====================
 		function main:Dropdown(text, option, var, callback)
 			local isdropping = false
-			local activeItem = tostring(var)
+			local activeItem = var and tostring(var) or ""
 
 			local Dropdown = Instance.new("Frame")
 			Dropdown.Name = "Dropdown"
