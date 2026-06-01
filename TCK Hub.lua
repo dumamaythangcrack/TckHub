@@ -266,151 +266,11 @@ function Update:Notify(desc)
 end
 
 function Update:StartLoad()
-    print("[TCK] Loading Started")
-    local Loader = Instance.new("ScreenGui")
-    Loader.Name = "TckLoader"
-    Loader.Parent = CoreGui
-    Loader.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    Loader.DisplayOrder = 1000
+    print("[TCK] StartLoad bypassed")
+end
 
-    local LoaderFrame = Instance.new("Frame")
-    LoaderFrame.Name = "Background"
-    LoaderFrame.Parent = Loader
-    LoaderFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
-    LoaderFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    LoaderFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-    LoaderFrame.Size = UDim2.new(1.5, 0, 1.5, 0) -- 1.5 to guarantee full cover on all resolutions/aspect ratios
-    LoaderFrame.BorderSizePixel = 0
-
-    local MainLoaderFrame = Instance.new("Frame")
-    MainLoaderFrame.Name = "CenterFrame"
-    MainLoaderFrame.Parent = LoaderFrame
-    MainLoaderFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    MainLoaderFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-    MainLoaderFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-    MainLoaderFrame.Size = UDim2.new(0, 420, 0, 260)
-    createCorner(MainLoaderFrame, 16)
-    createStroke(MainLoaderFrame, _G.Primary, 1.5, 0.6)
-
-    local TitleLoader = Instance.new("TextLabel")
-    TitleLoader.Parent = MainLoaderFrame
-    TitleLoader.Text = "TckHub"
-    TitleLoader.Font = Enum.Font.FredokaOne
-    TitleLoader.TextSize = 48
-    TitleLoader.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TitleLoader.BackgroundTransparency = 1
-    TitleLoader.AnchorPoint = Vector2.new(0.5, 0.5)
-    TitleLoader.Position = UDim2.new(0.5, 0, 0.35, 0)
-    TitleLoader.Size = UDim2.new(0.9, 0, 0.2, 0)
-
-    -- Glow/Gradient under text
-    local TextGradient = Instance.new("UIGradient")
-    TextGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, _G.Primary),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, _G.Third)
-    })
-    TextGradient.Parent = TitleLoader
-
-    local DescriptionLoader = Instance.new("TextLabel")
-    DescriptionLoader.Parent = MainLoaderFrame
-    DescriptionLoader.Text = "Loading systems.."
-    DescriptionLoader.Font = Enum.Font.GothamMedium
-    DescriptionLoader.TextSize = 13
-    DescriptionLoader.TextColor3 = Color3.fromRGB(180, 180, 180)
-    DescriptionLoader.BackgroundTransparency = 1
-    DescriptionLoader.AnchorPoint = Vector2.new(0.5, 0.5)
-    DescriptionLoader.Position = UDim2.new(0.5, 0, 0.6, 0)
-    DescriptionLoader.Size = UDim2.new(0.9, 0, 0.15, 0)
-
-    local LoadingBarBackground = Instance.new("Frame")
-    LoadingBarBackground.Parent = MainLoaderFrame
-    LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    LoadingBarBackground.AnchorPoint = Vector2.new(0.5, 0.5)
-    LoadingBarBackground.Position = UDim2.new(0.5, 0, 0.75, 0)
-    LoadingBarBackground.Size = UDim2.new(0.8, 0, 0.04, 0)
-    LoadingBarBackground.ClipsDescendants = true
-    LoadingBarBackground.BorderSizePixel = 0
-    createCorner(LoadingBarBackground, 4)
-
-    local LoadingBar = Instance.new("Frame")
-    LoadingBar.Parent = LoadingBarBackground
-    LoadingBar.BackgroundColor3 = _G.Primary
-    LoadingBar.Size = UDim2.new(0, 0, 1, 0)
-    createCorner(LoadingBar, 4)
-
-    local BarGradient = Instance.new("UIGradient")
-    BarGradient.Color = ColorSequence.new(_G.Primary, _G.Third)
-    BarGradient.Parent = LoadingBar
-
-    local LoadingPercent = Instance.new("TextLabel")
-    LoadingPercent.Parent = MainLoaderFrame
-    LoadingPercent.Text = "0%"
-    LoadingPercent.Font = Enum.Font.GothamBold
-    LoadingPercent.TextSize = 14
-    LoadingPercent.TextColor3 = Color3.fromRGB(255, 255, 255)
-    LoadingPercent.BackgroundTransparency = 1
-    LoadingPercent.AnchorPoint = Vector2.new(0.5, 0.5)
-    LoadingPercent.Position = UDim2.new(0.5, 0, 0.84, 0)
-
-    local progressTween = TweenService:Create(LoadingBar, TweenInfo.new(3.0, Enum.EasingStyle.OutQuad), {
-        Size = UDim2.new(0.75, 0, 1, 0)
-    })
-    progressTween:Play()
-
-    local dotCount = 0
-    local running = true
-    local currentPercent = 0
-
-    task.spawn(function()
-        for i = 1, 75 do
-            if not running then break end
-            currentPercent = i
-            LoadingPercent.Text = tostring(currentPercent) .. "%"
-            task.wait(0.02)
-        end
-    end)
-
-    task.spawn(function()
-        while running do
-            dotCount = (dotCount + 1) % 4
-            local dots = string.rep(".", dotCount)
-            DescriptionLoader.Text = "Please wait" .. dots
-            task.wait(0.4)
-        end
-    end)
-
-    -- Loaded function that handles immediate or delayed call safely
-    function Update:Loaded()
-        print("[TCK] Loading Complete")
-        running = false
-        pcall(function()
-            progressTween:Cancel()
-        end)
-        
-        task.spawn(function()
-            -- Fast finish animation
-            for i = currentPercent, 100 do
-                currentPercent = i
-                LoadingPercent.Text = tostring(currentPercent) .. "%"
-                LoadingBar.Size = UDim2.new(currentPercent / 100, 0, 1, 0)
-                task.wait(0.003)
-            end
-            
-            DescriptionLoader.Text = "Fully Loaded!"
-            print("[TCK] Loading Complete Finished")
-            task.wait(0.2)
-            
-            local fade1 = TweenService:Create(LoaderFrame, TweenInfo.new(0.3), {BackgroundTransparency = 1})
-            local fade2 = TweenService:Create(MainLoaderFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
-            fade1:Play()
-            fade2:Play()
-            task.delay(0.3, function()
-                Loader:Destroy()
-                print("[TCK] Loader GUI Destroyed")
-            end)
-        end)
-    end
+function Update:Loaded()
+    print("[TCK] Loaded bypassed")
 end
 
 -- Configuration Configuration File System
@@ -453,7 +313,7 @@ function Update:SaveSettings()
 end
 
 function Update:LoadAnimation()
-    return SettingsLib.LoadAnimation == true
+    return false
 end
 
 -- WINDOW SYSTEM
