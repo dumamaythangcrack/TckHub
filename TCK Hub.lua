@@ -740,6 +740,9 @@ function Update:Window(Config)
     local uitab = {}
 
     function uitab:Tab(text, img)
+        print("[TCK] Creating Tab:", text)
+        print("[TCK] Creating Page:", text)
+        
         local TabButton = Instance.new("TextButton")
         TabButton.Parent = ScrollTab
         TabButton.Name = text .. "Unique"
@@ -811,12 +814,20 @@ function Update:Window(Config)
         end)
 
         local function activateTab()
+            print("[TCK] Tab Clicked:", text)
+            print("[TCK] Showing Page:", text)
             for _, btn in ipairs(ScrollTab:GetChildren()) do
                 if btn:IsA("TextButton") then
                     TweenService:Create(btn, TweenInfo.new(0.25), {BackgroundTransparency = 0.95}):Play()
-                    TweenService:Create(btn.SelectedTab, TweenInfo.new(0.2), {Size = UDim2.new(0, 3, 0, 0), BackgroundTransparency = 1}):Play()
-                    TweenService:Create(btn.IDK, TweenInfo.new(0.25), {ImageTransparency = 0.4}):Play()
-                    TweenService:Create(btn.Title, TweenInfo.new(0.25), {TextColor3 = Color3.fromRGB(180, 180, 190)}):Play()
+                    if btn:FindFirstChild("SelectedTab") then
+                        TweenService:Create(btn.SelectedTab, TweenInfo.new(0.2), {Size = UDim2.new(0, 3, 0, 0), BackgroundTransparency = 1}):Play()
+                    end
+                    if btn:FindFirstChild("IDK") then
+                        TweenService:Create(btn.IDK, TweenInfo.new(0.25), {ImageTransparency = 0.4}):Play()
+                    end
+                    if btn:FindFirstChild("Title") then
+                        TweenService:Create(btn.Title, TweenInfo.new(0.25), {TextColor3 = Color3.fromRGB(180, 180, 190)}):Play()
+                    end
                 end
             end
             TweenService:Create(TabButton, TweenInfo.new(0.25), {BackgroundTransparency = 0.8}):Play()
