@@ -700,18 +700,6 @@ function Update:Window(Config)
     PageList.BackgroundTransparency = 1
     PageList.Size = UDim2.new(1, 0, 1, 0)
 
-    local UIPageLayout = Instance.new("UIPageLayout")
-    UIPageLayout.Parent = PageList
-    UIPageLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIPageLayout.EasingDirection = Enum.EasingDirection.Out
-    UIPageLayout.EasingStyle = Enum.EasingStyle.Quart
-    UIPageLayout.FillDirection = Enum.FillDirection.Horizontal
-    UIPageLayout.Padding = UDim.new(0, 16)
-    UIPageLayout.TweenTime = 0.35
-    UIPageLayout.GamepadInputEnabled = false
-    UIPageLayout.ScrollWheelInputEnabled = false
-    UIPageLayout.TouchInputEnabled = false
-
     makeDraggable(Top, OutlineMain)
 
     -- Close window keybind listener
@@ -804,6 +792,7 @@ function Update:Window(Config)
         MainFramePage.ScrollBarThickness = 2
         MainFramePage.ScrollingDirection = Enum.ScrollingDirection.Y
         MainFramePage.ScrollBarImageColor3 = _G.Primary
+        MainFramePage.Visible = false
 
         local UIPadding = Instance.new("UIPadding")
         UIPadding.PaddingTop = UDim.new(0, 4)
@@ -835,7 +824,12 @@ function Update:Window(Config)
             TweenService:Create(Icon, TweenInfo.new(0.25), {ImageTransparency = 0}):Play()
             TweenService:Create(Title, TweenInfo.new(0.25), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
             
-            UIPageLayout:JumpTo(MainFramePage)
+            for _, page in ipairs(PageList:GetChildren()) do
+                if page:IsA("ScrollingFrame") then
+                    page.Visible = false
+                end
+            end
+            MainFramePage.Visible = true
         end
 
         TabButton.MouseButton1Click:Connect(activateTab)
