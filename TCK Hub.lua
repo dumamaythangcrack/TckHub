@@ -261,7 +261,9 @@ function Update:StartLoad()
     LoaderFrame.Name = "Background"
     LoaderFrame.Parent = Loader
     LoaderFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
-    LoaderFrame.Size = UDim2.new(1, 0, 1, 0)
+    LoaderFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    LoaderFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    LoaderFrame.Size = UDim2.new(1.5, 0, 1.5, 0) -- 1.5 to guarantee full cover on all resolutions/aspect ratios
     LoaderFrame.BorderSizePixel = 0
 
     local MainLoaderFrame = Instance.new("Frame")
@@ -338,20 +340,21 @@ function Update:StartLoad()
     local running = true
 
     function Update:Loaded()
-        barTween2:Play()
+        pcall(function()
+            barTween1:Cancel()
+            barTween2:Play()
+        end)
     end
 
-    barTween1.Completed:Connect(function()
-        barTween2.Completed:Connect(function()
-            task.wait(0.5)
-            running = false
-            DescriptionLoader.Text = "Fully Loaded!"
-            task.wait(0.3)
-            TweenService:Create(LoaderFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(MainLoaderFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
-            task.delay(0.4, function()
-                Loader:Destroy()
-            end)
+    barTween2.Completed:Connect(function()
+        task.wait(0.5)
+        running = false
+        DescriptionLoader.Text = "Fully Loaded!"
+        task.wait(0.3)
+        TweenService:Create(LoaderFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(MainLoaderFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
+        task.delay(0.4, function()
+            Loader:Destroy()
         end)
     end)
 
