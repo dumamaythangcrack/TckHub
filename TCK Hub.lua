@@ -26,6 +26,9 @@ _G.Primary = Color3.fromRGB(120, 110, 255)  -- Glowing Violet Accent
 _G.Dark = Color3.fromRGB(13, 13, 16)        -- Rich Dark Glass Base
 _G.Third = Color3.fromRGB(255, 60, 100)     -- Vibrant Neon Red/Pink
 
+-- File level global reference to main GUI to bypass restricted indexing on executors
+local MainGuiInstance = nil
+
 -- Modern Utility Helpers
 local function createCorner(parent, radius)
     local corner = Instance.new("UICorner")
@@ -116,12 +119,24 @@ ImageButton.AutoButtonColor = false
 createCorner(ImageButton, 18)
 makeDraggable(ImageButton, OutlineButton)
 
-ImageButton.MouseButton1Click:Connect(function()
-    local mainGui = CoreGui:FindFirstChild("TckHub")
-    if mainGui then
-        mainGui.Enabled = not mainGui.Enabled
+local function toggleMainUI()
+    print("[TCK] Logo Clicked")
+    if MainGuiInstance then
+        MainGuiInstance.Enabled = not MainGuiInstance.Enabled
+        print("[TCK] Main UI Opened: " .. tostring(MainGuiInstance.Enabled))
+    else
+        local mainGui = CoreGui:FindFirstChild("TckHub")
+        if mainGui then
+            mainGui.Enabled = not mainGui.Enabled
+            print("[TCK] Main UI Opened (via fallback): " .. tostring(mainGui.Enabled))
+        else
+            warn("[TCK] Main UI Instance not found!")
+        end
     end
-end)
+end
+
+ImageButton.MouseButton1Click:Connect(toggleMainUI)
+ImageButton.TouchTap:Connect(toggleMainUI) -- Dedicated Mobile touch support
 
 -- Hover effect on OutlineButton
 ImageButton.MouseEnter:Connect(function()
@@ -251,6 +266,7 @@ function Update:Notify(desc)
 end
 
 function Update:StartLoad()
+    print("[TCK] Loading Started")
     local Loader = Instance.new("ScreenGui")
     Loader.Name = "TckLoader"
     Loader.Parent = CoreGui
@@ -327,7 +343,16 @@ function Update:StartLoad()
     BarGradient.Color = ColorSequence.new(_G.Primary, _G.Third)
     BarGradient.Parent = LoadingBar
 
-    -- Progress bar starts animating to 75% slowly
+    local LoadingPercent = Instance.new("TextLabel")
+    LoadingPercent.Parent = MainLoaderFrame
+    LoadingPercent.Text = "0%"
+    LoadingPercent.Font = Enum.Font.GothamBold
+    LoadingPercent.TextSize = 14
+    LoadingPercent.TextColor3 = Color3.fromRGB(255, 255, 255)
+    LoadingPercent.BackgroundTransparency = 1
+    LoadingPercent.AnchorPoint = Vector2.new(0.5, 0.5)
+    LoadingPercent.Position = UDim2.new(0.5, 0, 0.84, 0)
+
     local progressTween = TweenService:Create(LoadingBar, TweenInfo.new(3.0, Enum.EasingStyle.OutQuad), {
         Size = UDim2.new(0.75, 0, 1, 0)
     })
@@ -335,6 +360,16 @@ function Update:StartLoad()
 
     local dotCount = 0
     local running = true
+    local currentPercent = 0
+
+    task.spawn(function()
+        for i = 1, 75 do
+            if not running then break end
+            currentPercent = i
+            LoadingPercent.Text = tostring(currentPercent) .. "%"
+            task.wait(0.02)
+        end
+    end)
 
     task.spawn(function()
         while running do
@@ -347,26 +382,32 @@ function Update:StartLoad()
 
     -- Loaded function that handles immediate or delayed call safely
     function Update:Loaded()
+        print("[TCK] Loading Complete")
         running = false
         pcall(function()
-            progressTween:Cancel() -- stop the slow animation
+            progressTween:Cancel()
         end)
         
-        -- Quickly animate to 100%
-        local finishTween = TweenService:Create(LoadingBar, TweenInfo.new(0.3, Enum.EasingStyle.OutQuad), {
-            Size = UDim2.new(1, 0, 1, 0)
-        })
-        finishTween:Play()
-        
-        finishTween.Completed:Connect(function()
+        task.spawn(function()
+            -- Fast finish animation
+            for i = currentPercent, 100 do
+                currentPercent = i
+                LoadingPercent.Text = tostring(currentPercent) .. "%"
+                LoadingBar.Size = UDim2.new(currentPercent / 100, 0, 1, 0)
+                task.wait(0.003)
+            end
+            
             DescriptionLoader.Text = "Fully Loaded!"
-            task.wait(0.3)
+            print("[TCK] Loading Complete Finished")
+            task.wait(0.2)
+            
             local fade1 = TweenService:Create(LoaderFrame, TweenInfo.new(0.3), {BackgroundTransparency = 1})
             local fade2 = TweenService:Create(MainLoaderFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1})
             fade1:Play()
             fade2:Play()
             task.delay(0.3, function()
                 Loader:Destroy()
+                print("[TCK] Loader GUI Destroyed")
             end)
         end)
     end
@@ -417,6 +458,7 @@ end
 
 -- WINDOW SYSTEM
 function Update:Window(Config)
+    print("[TCK] UI Created")
     local WindowConfig = {
         Size = Config.Size or UDim2.new(0, 480, 0, 340),
         TabWidth = Config.TabWidth or 140
@@ -430,6 +472,9 @@ function Update:Window(Config)
     TckHub.Name = "TckHub"
     TckHub.Parent = CoreGui
     TckHub.DisplayOrder = 999
+    
+    -- Assign main GUI globally to bypass index blocks
+    MainGuiInstance = TckHub
 
     local OutlineMain = Instance.new("Frame")
     OutlineMain.Name = "OutlineMain"
